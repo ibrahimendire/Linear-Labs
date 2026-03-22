@@ -1,0 +1,322 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Algebra Blitz - Vanilla Edition</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      body {
+        font-family: "Inter", sans-serif;
+      }
+      @keyframes zoom-in {
+        from {
+          transform: scale(0.95);
+          opacity: 0;
+        }
+        to {
+          transform: scale(1);
+          opacity: 1;
+        }
+      }
+      .animate-zoom {
+        animation: zoom-in 0.2s ease-out forwards;
+      }
+      .hidden {
+        display: none;
+      }
+      input::-webkit-outer-spin-button,
+      input::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+      }
+    </style>
+  </head>
+  <body
+    class="bg-slate-900 text-white min-h-screen flex flex-col items-center justify-center p-4"
+  >
+    <!-- Header / Scoreboard -->
+    <div
+      class="w-full max-w-2xl mb-8 flex justify-between items-center bg-slate-800 p-6 rounded-3xl border-b-8 border-slate-950 shadow-2xl"
+    >
+      <div class="flex items-center gap-3 text-emerald-400">
+        <div class="bg-emerald-500 p-3 rounded-2xl shadow-lg text-white">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="32"
+            height="32"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+            <polyline points="22 4 12 14.01 9 11.01" />
+          </svg>
+        </div>
+        <div>
+          <p class="text-slate-400 text-xs uppercase font-black">Solved</p>
+          <p id="score-correct" class="text-4xl font-black">0</p>
+        </div>
+      </div>
+
+      <div class="text-center px-4">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="40"
+          height="40"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          class="text-yellow-400 mx-auto mb-1 animate-pulse"
+        >
+          <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+        </svg>
+        <h1 class="text-2xl font-black italic tracking-tighter">
+          ALGEBRA BLITZ
+        </h1>
+      </div>
+
+      <div class="flex items-center gap-3 text-right text-rose-500">
+        <div>
+          <p class="text-slate-400 text-xs uppercase font-black">Missed</p>
+          <p id="score-incorrect" class="text-4xl font-black">0</p>
+        </div>
+        <div class="bg-rose-600 p-3 rounded-2xl shadow-lg text-white">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="32"
+            height="32"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <circle cx="12" cy="12" r="10" />
+            <path d="m15 9-6 6" />
+            <path d="m9 9 6 6" />
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Game Area -->
+    <div
+      class="w-full max-w-2xl bg-fuchsia-700 rounded-[3rem] p-8 md:p-12 shadow-[0_20px_0_0_rgba(112,26,117,1)] text-center relative overflow-hidden"
+    >
+      <div
+        class="absolute -bottom-10 -left-10 w-64 h-64 bg-fuchsia-600 rounded-full opacity-30 blur-3xl"
+      ></div>
+
+      <!-- Playing State -->
+      <div id="screen-playing" class="relative z-10">
+        <div class="mb-10">
+          <span
+            class="text-fuchsia-200 text-xl font-bold block mb-4 tracking-widest uppercase"
+            >Solve for x:</span
+          >
+          <div
+            id="display-equation"
+            class="text-4xl md:text-6xl font-black tabular-nums bg-fuchsia-900/40 p-8 rounded-3xl border-2 border-fuchsia-400/30 shadow-inner"
+          >
+            <!-- Equation goes here -->
+          </div>
+        </div>
+
+        <form id="game-form" class="flex flex-col items-center gap-4">
+          <div class="flex items-center gap-4">
+            <span class="text-5xl font-black text-yellow-300">x =</span>
+            <input
+              id="user-input"
+              type="number"
+              placeholder="?"
+              class="w-40 bg-white text-slate-900 text-6xl font-black p-6 rounded-3xl text-center border-b-8 border-slate-300 focus:outline-none focus:ring-8 focus:ring-yellow-400 transition-all placeholder-slate-200"
+              required
+            />
+          </div>
+
+          <button
+            type="submit"
+            class="mt-6 block w-full bg-yellow-400 hover:bg-yellow-300 text-fuchsia-950 text-3xl font-black py-6 rounded-3xl border-b-8 border-yellow-600 active:border-b-0 active:translate-y-2 transition-all uppercase"
+          >
+            Check x
+          </button>
+        </form>
+      </div>
+
+      <!-- Feedback State -->
+      <div id="screen-feedback" class="relative z-10 hidden animate-zoom">
+        <div
+          id="feedback-title"
+          class="text-6xl md:text-8xl mb-6 font-black flex flex-col items-center"
+        >
+          <!-- Icon and Text here -->
+        </div>
+
+        <div
+          class="text-2xl md:text-3xl font-bold text-fuchsia-100 mb-8 p-6 bg-fuchsia-900/60 rounded-2xl border-2 border-fuchsia-400/30"
+        >
+          <p id="feedback-equation" class="mb-2 opacity-70 italic"></p>
+          <p>
+            The value of x is
+            <span
+              id="correct-answer"
+              class="text-yellow-300 text-5xl ml-2 font-black"
+            ></span>
+          </p>
+          <p
+            id="user-guess-container"
+            class="text-xl mt-4 text-rose-300 hidden"
+          >
+            You entered: <span id="user-guess"></span>
+          </p>
+        </div>
+
+        <button
+          id="btn-next"
+          class="w-full bg-white hover:bg-slate-100 text-fuchsia-700 text-3xl font-black py-6 rounded-3xl border-b-8 border-slate-300 active:border-b-0 active:translate-y-2 transition-all uppercase"
+        >
+          Next Equation →
+        </button>
+      </div>
+    </div>
+
+    <button
+      id="btn-reset"
+      class="mt-12 flex items-center gap-2 text-slate-500 hover:text-white font-bold transition-colors uppercase tracking-widest text-sm"
+    >
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="18"
+        height="18"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+        <path d="M3 3v5h5" />
+      </svg>
+      Reset Progress
+    </button>
+
+    <script>
+      // State management
+      let score = { correct: 0, incorrect: 0 };
+      let currentProblem = { equation: "", x: 0 };
+
+      // DOM Elements
+      const screenPlaying = document.getElementById("screen-playing");
+      const screenFeedback = document.getElementById("screen-feedback");
+      const displayEquation = document.getElementById("display-equation");
+      const userInput = document.getElementById("user-input");
+      const gameForm = document.getElementById("game-form");
+      const scoreCorrect = document.getElementById("score-correct");
+      const scoreIncorrect = document.getElementById("score-incorrect");
+      const feedbackTitle = document.getElementById("feedback-title");
+      const feedbackEquation = document.getElementById("feedback-equation");
+      const correctAnswerSpan = document.getElementById("correct-answer");
+      const userGuessContainer = document.getElementById(
+        "user-guess-container",
+      );
+      const userGuessSpan = document.getElementById("user-guess");
+      const btnNext = document.getElementById("btn-next");
+      const btnReset = document.getElementById("btn-reset");
+
+      function generateProblem() {
+        const type = Math.floor(Math.random() * 3);
+        let equation = "";
+        let x = Math.floor(Math.random() * 21) - 10;
+
+        if (x === 0 && Math.random() > 0.3)
+          x = Math.floor(Math.random() * 9) + 1;
+
+        if (type === 0) {
+          const a = Math.floor(Math.random() * 20) + 1;
+          const b = x + a;
+          equation = `x + ${a} = ${b}`;
+        } else if (type === 1) {
+          const a = Math.floor(Math.random() * 8) + 2;
+          const b = Math.floor(Math.random() * 20) - 10;
+          const c = a * x + b;
+          const op = b >= 0 ? "+" : "-";
+          equation = `${a}x ${op} ${Math.abs(b)} = ${c}`;
+        } else {
+          let a = Math.floor(Math.random() * 5) + 2;
+          let c = Math.floor(Math.random() * 4) + 1;
+          if (a === c) a++;
+          const b = Math.floor(Math.random() * 20) - 10;
+          const d = a * x + b - c * x;
+          const opB = b >= 0 ? "+" : "-";
+          const opD = d >= 0 ? "+" : "-";
+          equation = `${a}x ${opB} ${Math.abs(b)} = ${c}x ${opD} ${Math.abs(d)}`;
+        }
+
+        currentProblem = { equation, x };
+        displayEquation.textContent = equation;
+
+        // Switch screens
+        userInput.value = "";
+        screenFeedback.classList.add("hidden");
+        screenPlaying.classList.remove("hidden");
+        userInput.focus();
+      }
+
+      gameForm.addEventListener("submit", (e) => {
+        e.preventDefault();
+        const val = parseInt(userInput.value);
+        const isCorrect = val === currentProblem.x;
+
+        if (isCorrect) {
+          score.correct++;
+          scoreCorrect.textContent = score.correct;
+          feedbackTitle.innerHTML = `
+                    <svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mb-4 text-yellow-300 animate-bounce"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>
+                    <span class="text-green-300">GENIUS!</span>
+                `;
+          userGuessContainer.classList.add("hidden");
+        } else {
+          score.incorrect++;
+          scoreIncorrect.textContent = score.incorrect;
+          feedbackTitle.innerHTML = `
+                    <svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mb-4 text-red-100"><circle cx="12" cy="12" r="10"/><path d="m15 9-6 6"/><path d="m9 9 6 6"/></svg>
+                    <span class="text-red-300">NOT QUITE!</span>
+                `;
+          userGuessSpan.textContent = val;
+          userGuessContainer.classList.remove("hidden");
+        }
+
+        feedbackEquation.textContent = currentProblem.equation;
+        correctAnswerSpan.textContent = currentProblem.x;
+
+        screenPlaying.classList.add("hidden");
+        screenFeedback.classList.remove("hidden");
+      });
+
+      btnNext.addEventListener("click", generateProblem);
+
+      btnReset.addEventListener("click", () => {
+        score = { correct: 0, incorrect: 0 };
+        scoreCorrect.textContent = "0";
+        scoreIncorrect.textContent = "0";
+        generateProblem();
+      });
+
+      // Start game
+      window.onload = generateProblem;
+    </script>
+  </body>
+</html>
